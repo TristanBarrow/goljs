@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOL JS</title>
+    <style>
+        body {
+            padding: 0;
+            border: 0;
+            margin: 0
+        }
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            height: 10px;
+            width: 1100px;
+        }
+        .cell {
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            height: 10px;
+            width: 10px;
+        }
+        .alive {
+            background-color: black;
+        }
+    </style>
+    <script>
+        const revive = (cell) => {
+            cell.style.backgroundColor = 'black'
+        }
+        const kill = (cell) => {
+            cell.style.backgroundColor = ''
+        }
+        const _isAlive = (cell) => {
+            if (!cell) return false
+            return cell.style.backgroundColor === 'black'
+        }
+        const _liveNeighbors = (board, i, j) => {
+                let count = 0
+                for (let a = -1; a <= 1; a++) {
+                    for (let b = -1; b<= 1; b++) {
+                        let shouldRead = !(a === 0 && b === 0) 
+                        const cell_i = i+a
+                        const cell_j = j+b
+                        if (cell_i < 0 || cell_i >= 100) shouldRead = false
+                        if (cell_j < 0 || cell_j >= 100) shouldRead = false
+                    
+                        if (shouldRead) {
+                            const cell = board.children[cell_i].children[cell_j]
+                            const alive = _isAlive(cell)
+                            if (alive) count++
+                        } 
+                    }
+                }
+            return count
+        }
+        const onStart = () => {
+            setInterval(tick, 100);
+        }
+        const tick = () => {
+            let cellsToKill = []
+            let cellsToRevive = []
+            const board = document.getElementById('container')
+            const cell = body.children[0].children[0]
+            for (let i = 1; i < board.children.length; i++) {
+                for (let j = 0; j < board.children[i].children.length; j++) {
+                    const cell = board.children[i].children[j]
+                    const isAlive = _isAlive(cell)
+                    const liveNeighbors = _liveNeighbors(body, i, j)
+                    if (isAlive) {
+                        if (liveNeighbors < 2) cellsToKill.push(cell)
+                        if (liveNeighbors > 3) cellsToKill.push(cell)
+                    } else {
+                        if (liveNeighbors === 3) cellsToRevive.push(cell)
+                    }
+
+
+                }
+            }
+            cellsToKill.forEach(cell => kill(cell))
+            cellsToRevive.forEach(cell => revive(cell))
+        }
+        const onSelect = (e) => {
+            if (e.target.style.backgroundColor === 'black') e.target.style.backgroundColor = ''
+            else e.target.style.backgroundColor = 'black'
+        }
+    </script>
+</head>
+<body>
+    <button onclick="onStart()">start</button> refresh to clear or stop
+    <div id="container"></div>
+</body>
+    <script>
+        const body = document.getElementById('container')
+        for(let i = 0; i < 100; i++){
+            const row = document.createElement('div')
+            row.className = 'row'
+            row.id = `row_${i}`
+            for(let j = 0; j < 100; j++){
+                const cell = document.createElement('div')
+                cell.className = 'cell'
+                cell.id = `cell_${j}`
+                cell.onclick = onSelect
+                row.appendChild(cell)
+            }
+            body.appendChild(row)
+        }
+    </script>
+</html>
